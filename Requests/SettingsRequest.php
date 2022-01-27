@@ -34,7 +34,7 @@ class SettingsRequest extends Request
         return [
             'datto_url' => 'required',
             'datto_api_key' => 'required',
-            'datto_url' => 'datto_api_sec',
+            'datto_api_sec' => 'required',
         ];
     }
 
