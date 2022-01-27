@@ -32,7 +32,9 @@ class SettingsRequest extends Request
     public function rules()
     {
         return [
-            'setting' => 'required|alpha_num',
+            'datto_url' => 'required',
+            'datto_api_key' => 'required',
+            'datto_url' => 'datto_api_sec',
         ];
     }
 
