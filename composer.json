@@ -1,0 +1,12 @@
+{
+    "name": "technologyadvocates/dattormm",
+    "require": {},
+    "config": {
+        "prepend-autoloader": false
+    },
+    "authors": [
+        {
+            "name": "Technology Advocates"
+        }
+    ]
+}
