@@ -4,11 +4,13 @@ namespace App\Plugins\DattoRMM\Controllers;
 
 use App\Modules\Core\Controllers\Plugins\Plugin;
 use App\Plugins\DattoRMM\Requests\SettingsRequest;
+use Illuminate\Database\Schema\Blueprint;
 use JsValidator;
 use Lang;
 use Redirect;
 use Session;
 use TemplateView;
+use Schema;
 
 class DattoRMM extends Plugin
 {
@@ -50,7 +52,7 @@ class DattoRMM extends Plugin
      */
     public function updateSettings(SettingsRequest $request)
     {
-        $data = $request->all(['datto_url']);
+        $data = $request->all();
 
         // Work through each row of data.
         foreach ($data as $key => $value) {
@@ -73,11 +75,33 @@ class DattoRMM extends Plugin
      */
     public function activate()
     {
-        // Add permission.
-        $attributes = ['view' => true, 'create' => true, 'update' => true, 'delete' => true];
-        $this->addPermission('settings', $attributes, 'DattoRMM::lang.permission');
+        try {
+            // Add Setting Page Permissions.
+            $attributes = ['view' => true, 'create' => true, 'update' => true, 'delete' => true];
+            $this->addPermission('settings', $attributes, 'DattoRMM::lang.permission');
 
-        return true;
+            // Create Organization to site mapping table
+            if (! Schema::hasTable('comits_org_site_map')) {
+                Schema::create('comits_org_site_map', function (Blueprint $table) {
+                    $table->engine = 'InnoDB';
+
+                    $table->charset = 'utf8mb4';
+                    $table->collation = 'utf8mb4_unicode_ci';
+
+                    $table->increments('id')->unsigned();
+
+                    $table->integer('org_id')->unsigned();
+                    $table->foreign('org_id')->references('id')->on('user_organisation')->onDelete('cascade');
+
+                    $table->integer('datto_site_id')->default(0);
+                    $table->tinyInteger('enabled')->default(0);
+                });
+            }
+
+            return true;
+        } catch (Exception $e) {
+            return false;
+        }
     }
 
     /**
@@ -99,12 +123,23 @@ class DattoRMM extends Plugin
      */
     public function uninstall()
     {
-        // Remove settings.
-        $this->removeSettings();
+        try {
+            // Remove settings
+            $this->removeSettings();
 
-        // Remove permission.
-        $this->removePermission('settings');
+            // Remove permissions
+            $this->removePermissions();
 
-        return true;
+            // Drop Organization to Datto Site Mapping table if it exists
+            if (Schema::hasTable('comits_org_site_map')) {
+                Schema::disableForeignKeyConstraints();
+                Schema::drop('comits_org_site_map');
+                Schema::enableForeignKeyConstraints();
+            }
+
+            return true;
+        } catch (Exception $e) {
+            return false;
+        }
     }
 }

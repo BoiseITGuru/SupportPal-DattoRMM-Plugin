@@ -2,7 +2,7 @@
 
 return [
 
-    "name"                  => "DattoRMM",
+    "name"                  => "Datto RMM",
     "description"           => "Datto RMM Integration for syncing device info and alerts",
 
     "datto_url"             => "Datto API URL",
