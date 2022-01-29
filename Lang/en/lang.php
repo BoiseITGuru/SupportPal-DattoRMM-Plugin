@@ -14,7 +14,7 @@ return [
     "datto_api_sec"         => "Datto API Secret",
     "datto_api_sec_desc"    => "Datto API Secret",
 
-    "setting_alpha_num"     => "The setting field must contain only numbers and letters.",
+    "required_field"        => "The field is required.",
 
     "permission"            => "Manage Settings",
 

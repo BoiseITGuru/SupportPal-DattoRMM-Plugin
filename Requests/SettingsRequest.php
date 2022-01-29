@@ -46,7 +46,9 @@ class SettingsRequest extends Request
     public function messages()
     {
         return [
-            'setting.alpha_num' => Lang::get('DattoRMM::lang.setting_alpha_num'),
+            'datto_url.required' => Lang::get('DattoRMM::lang.required_field'),
+            'datto_api_key.required' => Lang::get('DattoRMM::lang.required_field'),
+            'datto_api_sec.required' => Lang::get('DattoRMM::lang.required_field'),
         ];
     }
 }

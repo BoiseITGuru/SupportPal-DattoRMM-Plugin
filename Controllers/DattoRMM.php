@@ -50,7 +50,7 @@ class DattoRMM extends Plugin
      */
     public function updateSettings(SettingsRequest $request)
     {
-        $data = $request->all(['setting']);
+        $data = $request->all(['datto_url']);
 
         // Work through each row of data.
         foreach ($data as $key => $value) {
