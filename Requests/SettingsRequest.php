@@ -35,7 +35,6 @@ class SettingsRequest extends Request
     {
         $rules = [
             'brand0-datto_url'   => ['required', 'regex:/(.*)\/$/'],
-            'brand0-datto_api_key' => ['required'],
         ];
 
         // Add rules for brands if more than one.
@@ -87,7 +86,6 @@ class SettingsRequest extends Request
 
         return array_merge($brandAttributes, [
             'brand0-datto_url'   => Str::lower(Lang::get('DattoRMM::lang.datto_url')),
-            'brand0-datto_api_key' => Str::lower(Lang::get('DattoRMM::lang.datto_api_key')),
         ]);
     }
 }

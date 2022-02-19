@@ -63,7 +63,7 @@
                     <div class="sp-form-row">
                         {{ form_label('brand' ~ brand.id ~ '-datto_url', Lang.get('DattoRMM::lang.datto_url')) }}
                         <div class="sp-input-container">
-                            {{ form_url('brand' ~ brand.id ~ '-datto_url', null, {'class': 'system-url', 'size': 50}) }}
+                            {{ form_url('brand' ~ brand.id ~ '-datto_url', null, {'class': 'datto_url', 'size': 50}) }}
                             <div class="sp-description">{{ Lang.get('DattoRMM::lang.datto_url_desc') }}</div>
                         </div>
                     </div>
@@ -71,15 +71,17 @@
                     <div class="sp-form-row">
                         {{ form_label('brand' ~ brand.id ~ '-datto_api_key', Lang.get('DattoRMM::lang.datto_api_key')) }}
                         <div class="sp-input-container">
-                            {{ form_text('brand' ~ brand.id ~ '-datto_api_key', null, {'class': 'api-username'}) }}
-                            <div class="sp-description">{{ Lang.get('DattoRMM::lang.datto_api_key_desc') }}</div>
+                            {{ form_password('brand' ~ brand.id ~ '-datto_api_key', {'class': 'datto_api_key'}) }}
+                            {% if fields['brand' ~ brand.id ~ '-datto_api_key'] is not empty %}
+                                <div class="sp-description">({{ Lang.get('general.only_enter_to_change') }})</div>
+                            {% endif %}
                         </div>
                     </div>
 
                     <div class="sp-form-row">
                         {{ form_label('brand' ~ brand.id ~ '-datto_api_sec', Lang.get('DattoRMM::lang.datto_api_sec')) }}
                         <div class="sp-input-container">
-                            {{ form_password('brand' ~ brand.id ~ '-datto_api_sec', {'class': 'api-password'}) }}
+                            {{ form_password('brand' ~ brand.id ~ '-datto_api_sec', {'class': 'datto_api_sec'}) }}
                             {% if fields['brand' ~ brand.id ~ '-datto_api_sec'] is not empty %}
                                 <div class="sp-description">({{ Lang.get('general.only_enter_to_change') }})</div>
                             {% endif %}
@@ -135,9 +137,9 @@
                 $.post(
                     '{{ route('plugin.dattormm.settings.validate') }}',
                     {
-                        datto_url: $(this).find('input.datto_url').val(),
-                        datto_api_key: $(this).find('input.datto_api_key').val(),
-                        datto_api_sec: $(this).find('input.datto_api_sec').val(),
+                        datto_url: $(this).parents('.sp-tab-content').find('input.datto_url').val(),
+                        datto_api_key: $(this).parents('.sp-tab-content').find('input.datto_api_key').val(),
+                        datto_api_sec: $(this).parents('.sp-tab-content').find('input.datto_api_sec').val(),
                     },
                     function (response) {
                         if (response.status == 'success') {
