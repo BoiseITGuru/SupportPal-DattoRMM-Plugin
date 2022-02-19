@@ -1,17 +1,19 @@
-<?php
+<?php declare(strict_types=1);
+
 /**
  * File SettingsRequest.php
+ *
+ * @copyright  Copyright (c) 2015-2016 SupportPal (http://www.supportpal.com)
+ * @license    http://www.supportpal.com/company/eula
  */
 namespace App\Plugins\DattoRMM\Requests;
 
 use App\Http\Requests\Request;
-use Lang;
+use Illuminate\Support\Facades\Lang;
+use Illuminate\Support\Str;
 
-/**
- * Class SettingsRequest
- *
- * @package    App\Plugins\DattoRMM\Requests
- */
+use function array_merge;
+
 class SettingsRequest extends Request
 {
     /**
@@ -19,7 +21,7 @@ class SettingsRequest extends Request
      *
      * @return bool
      */
-    public function authorize()
+    public function authorize(): bool
     {
         return true;
     }
@@ -27,28 +29,65 @@ class SettingsRequest extends Request
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array
+     * @return array<mixed>
      */
-    public function rules()
+    public function rules(): array
     {
-        return [
-            'datto_url' => 'required',
-            'datto_api_key' => 'required',
-            'datto_api_sec' => 'required',
+        $rules = [
+            'brand0-datto_url'   => ['required', 'regex:/(.*)\/$/'],
+            'brand0-datto_api_key' => ['required'],
         ];
+
+        // Add rules for brands if more than one.
+        if (brand_count() > 1) {
+            brand_config(null)->each(function ($model) use (&$rules) {
+                $rules['brand' . $model->id . '-datto_url'] = ['nullable', 'regex:/(.*)\/$/'];
+            });
+        }
+
+        return $rules;
     }
 
     /**
      * Get the error messages for the defined validation rules.
      *
-     * @return array
+     * @return array<string>
      */
-    public function messages()
+    public function messages(): array
     {
-        return [
-            'datto_url.required' => Lang::get('DattoRMM::lang.required_field'),
-            'datto_api_key.required' => Lang::get('DattoRMM::lang.required_field'),
-            'datto_api_sec.required' => Lang::get('DattoRMM::lang.required_field'),
+        $messages = [
+            'brand0-datto_url.regex' => Lang::get('DattoRMM::lang.validation_trailing_slash'),
         ];
+
+        // Add messages for brands if more than one.
+        if (brand_count() > 1) {
+            brand_config(null)->each(function ($model) use (&$messages) {
+                $messages['brand' . $model->id . '-datto_url.regex']
+                    = Lang::get('DattoRMM::lang.validation_trailing_slash');
+            });
+        }
+
+        return $messages;
+    }
+
+    /**
+     * Get custom attributes for validator errors.
+     *
+     * @return array<string>
+     */
+    public function attributes(): array
+    {
+        $brandAttributes = [];
+        if (brand_count() > 1) {
+            brand_config(null)->each(function ($model) use (&$brandAttributes) {
+                $brandAttributes['brand' . $model->id . '-datto_url']
+                    = Lang::get('DattoRMM::lang.datto_url');
+            });
+        }
+
+        return array_merge($brandAttributes, [
+            'brand0-datto_url'   => Str::lower(Lang::get('DattoRMM::lang.datto_url')),
+            'brand0-datto_api_key' => Str::lower(Lang::get('DattoRMM::lang.datto_api_key')),
+        ]);
     }
 }

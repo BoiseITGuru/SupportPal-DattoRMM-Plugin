@@ -14,6 +14,10 @@ use Schema;
 
 class DattoRMM extends Plugin
 {
+    const ACTIVE = 0;
+    const ERROR = 1;
+    const NOT_CONFIGURED = 2;
+
     /**
      * Plugin identifier.
      */
@@ -39,9 +43,51 @@ class DattoRMM extends Plugin
      */
     public function getSettingsPage()
     {
+        $settings = $this->settings();
+
+        // // Check that the ticket custom field still exists, else delete it
+        // $this->getRelatedServiceField();
+
+        // Get brands (add a default with ID 0 to start)
+        $brands = [['id' => 0, 'name' => Lang::get('general.default')]] + brand_config(null)->toArray();
+
+        foreach ($brands as $brand) {
+            // Attempt to connect to WHMCS for status
+            if (! empty($settings['brand' . $brand['id'] . '-datto_url'])
+                && ! empty($settings['brand' . $brand['id'] . '-datto_api_key'])
+                && ! empty($settings['brand' . $brand['id'] . '-datto_api_sec'])
+            ) {
+                // // Try an API call
+                // $response = $this->whmcsConnect(['action' => 'getstats'], $brand['id']);
+
+                // if (isset($response['result']) && $response['result'] === 'success') {
+                //     // All working well
+                //     $settings['brand' . $brand['id'] . '-status'] = self::ACTIVE;
+                // } else {
+                //     // Something went wrong
+                //     $settings['brand' . $brand['id'] . '-status'] = self::ERROR;
+
+                //     // If there's an error message, show it
+                //     if (isset($response['message'])) {
+                //         $settings['brand' . $brand['id'] . '-error_message'] = $response['message'];
+                //     }
+                // }
+            } else {
+                // Not fully configured
+                $settings['brand' . $brand['id'] . '-status'] = self::NOT_CONFIGURED;
+            }
+        }
+
+        // // Roles list for permission assignment
+        // $roles = Role::pluck('name', 'id')->all();
+        // $permissions = Permission::with('roles')->where('name', 'LIKE', 'whmcsinformation_%')->get();
+
         return TemplateView::other('DattoRMM::settings')
             ->with('jsValidator', JsValidator::formRequest(SettingsRequest::class))
-            ->with('fields', $this->settings());
+            ->with('fields', $settings)
+            ->with('brands', $brands);
+            // ->with('roles', $roles)
+            // ->with('permissions', $permissions);
     }
 
     /**
@@ -98,6 +144,8 @@ class DattoRMM extends Plugin
                 });
             }
 
+            //TO DO - add devices tables
+
             return true;
         } catch (Exception $e) {
             return false;
@@ -140,6 +188,44 @@ class DattoRMM extends Plugin
             return true;
         } catch (Exception $e) {
             return false;
+        }
+    }
+
+    /**
+     * Validate the Datto RMM authentication details
+     *
+     * @return JsonResponse
+     */
+    public function validateAuth()
+    {
+        $data = Request::all(['datto_url', 'datto_api_key', 'datto_api_sec']);
+
+        try {
+            // If the password hasn't been entered, use existing value in settings
+            $existingPassword = Arr::get($this->settings(), 'datto_api_sec');
+            if (empty($data['datto_api_sec']) && ! empty($existingPassword)) {
+                $data['datto_api_sec'] = decode($existingPassword);
+            }
+
+            // Attempt call with details provided
+            $fields = ['action' => 'getadmindetails'];
+            $response = $this->whmcsConnect($fields, 0, $data);
+
+            if (isset($response['result']) && $response['result'] === 'success') {
+                return Response::json([
+                    'status'  => 'success',
+                    'message' => null,
+                    'data'    => null
+                ]);
+            }
+
+            throw new RuntimeException((string) Arr::get($response, 'message'));
+        } catch (Exception $e) {
+            return Response::json([
+                'status'  => 'error',
+                'message' => $e->getMessage(),
+                'data'    => null
+            ]);
         }
     }
 }

@@ -4,33 +4,105 @@
     {{ Lang.get('DattoRMM::lang.name') }}
 {% endblock %}
 
+{% block description %}
+    {{ Lang.get('DattoRMM::lang.description')|raw }}
+{% endblock %}
+
 {% block content %}
 
     {{ form_model(fields, {'method': 'POST', 'route': [ 'plugin.dattormm.settings.update' ], 'class': 'validate'}) }}
 
-        <div class="sp-form-container">
+        <h2>{{ Lang.get('DattoRMM::lang.authentication') }}</h2>
 
-            <div class="sp-form-row">
-                {{ form_label('setting', Lang.get('DattoRMM::lang.datto_url')) }}
-                <div class="sp-input-container">
-                    {{ form_text('datto_url') }}
-                    <div class="sp-description">{{ Lang.get('DattoRMM::lang.datto_url_desc') }}</div>
+        <div class="sp-subtitle-description">
+            {% if brands|length == 2 %}
+                {{ Lang.get('DattoRMM::lang.authentication_desc') }}
+            {% else %}
+                {{ Lang.get('DattoRMM::lang.authentication_brand_desc') }}
+            {% endif %}
+        </div>
+
+        <div class="sp-form-container sp-pt-0 sp-border-t-0">
+
+            {# if brands|length == 2 then then only one exists in the system - Default (fake brand) and Brand 1 #}
+            <ul class="sp-tabs {% if brands|length == 2 %}sp-hidden{% endif %}">
+                {% for brand in brands %}
+                    <li id="{{ brand.id }}" {% if loop.first %}class="sp-active"{% endif %}>
+                        <a>{{ brand.name }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+
+            {% for brand in brands %}
+                <div id="tab{{ brand.id }}" class="sp-tab-content {% if not loop.first %}sp-hidden{% endif %}">
+                    <div class="sp-form-row">
+                        <label>{{ Lang.choice('general.status', 1) }}</label>
+                        <div class="sp-input-container">
+                            {% if fields['brand' ~ brand.id ~ '-status'] == 0 %}
+                                <strong class="sp-text-green-600">{{ Lang.get('general.active') }}</strong>
+                                <div class="sp-description">{{ Lang.get('DattoRMM::lang.active_desc') }}</div>
+                            {% elseif fields['brand' ~ brand.id ~ '-status'] == 1 %}
+                                <strong class="sp-text-red-600">
+                                    {{ Lang.get('messages.error') }}
+                                    {% if fields['brand' ~ brand.id ~ '-error_message'] is not empty %}
+                                        - {{ fields['brand' ~ brand.id ~ '-error_message'] }}
+                                    {% endif %}
+                                </strong>
+                                <div class="sp-description">{{ Lang.get('DattoRMM::lang.error_desc') }}</div>
+                            {% elseif fields['brand' ~ brand.id ~ '-status'] == 2 %}
+                                <strong class="sp-text-orange-600">{{ Lang.get('DattoRMM::lang.not_configured') }}</strong>
+                                {% if brand.id == 0 %}
+                                    <div class="sp-description">{{ Lang.get('DattoRMM::lang.not_configured_desc') }}</div>
+                                {% else %}
+                                    <div class="sp-description">{{ Lang.get('DattoRMM::lang.not_configured_brand_desc') }}</div>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="sp-form-row">
+                        {{ form_label('brand' ~ brand.id ~ '-datto_url', Lang.get('DattoRMM::lang.datto_url')) }}
+                        <div class="sp-input-container">
+                            {{ form_url('brand' ~ brand.id ~ '-datto_url', null, {'class': 'system-url', 'size': 50}) }}
+                            <div class="sp-description">{{ Lang.get('DattoRMM::lang.datto_url_desc') }}</div>
+                        </div>
+                    </div>
+
+                    <div class="sp-form-row">
+                        {{ form_label('brand' ~ brand.id ~ '-datto_api_key', Lang.get('DattoRMM::lang.datto_api_key')) }}
+                        <div class="sp-input-container">
+                            {{ form_text('brand' ~ brand.id ~ '-datto_api_key', null, {'class': 'api-username'}) }}
+                            <div class="sp-description">{{ Lang.get('DattoRMM::lang.datto_api_key_desc') }}</div>
+                        </div>
+                    </div>
+
+                    <div class="sp-form-row">
+                        {{ form_label('brand' ~ brand.id ~ '-datto_api_sec', Lang.get('DattoRMM::lang.datto_api_sec')) }}
+                        <div class="sp-input-container">
+                            {{ form_password('brand' ~ brand.id ~ '-datto_api_sec', {'class': 'api-password'}) }}
+                            {% if fields['brand' ~ brand.id ~ '-datto_api_sec'] is not empty %}
+                                <div class="sp-description">({{ Lang.get('general.only_enter_to_change') }})</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="sp-form-row">
+                        <label></label>
+                        <div class="sp-input-container">
+                            {{ form_button(Lang.get('general.validate_auth'), { 'class': 'validate-button' }) }}
+                            &nbsp;&nbsp;
+                            <span class="validate text-progress sp-text-orange-600 sp-hidden">
+                                <i class='fas fa-spinner fa-spin'></i>&nbsp; {{ Lang.get('messages.in_progress') }}...
+                            </span>
+                            <span class="validate text-success sp-text-green-600 sp-hidden">{{ Lang.get('messages.success') }}!</span>
+                            <span class="validate text-fail sp-text-red-600 sp-hidden">
+                                {{ Lang.get('messages.error') }}!
+                                <span class="error-message"></span>
+                            </span>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="sp-form-row">
-                {{ form_label('setting', Lang.get('DattoRMM::lang.datto_api_key')) }}
-                <div class="sp-input-container">
-                    {{ form_text('datto_api_key') }}
-                    <div class="sp-description">{{ Lang.get('DattoRMM::lang.datto_api_key_desc') }}</div>
-                </div>
-            </div>
-            <div class="sp-form-row">
-                {{ form_label('setting', Lang.get('DattoRMM::lang.datto_api_sec')) }}
-                <div class="sp-input-container">
-                    {{ form_text('datto_api_sec') }}
-                    <div class="sp-description">{{ Lang.get('DattoRMM::lang.datto_api_sec_desc') }}</div>
-                </div>
-            </div>
+            {% endfor %}
         </div>
 
         <div class="sp-form-button">
@@ -45,4 +117,44 @@
     {% if jsValidator|default is not empty %}
         {{ jsValidator|raw }}
     {% endif %}
+
+    <script type="text/javascript">
+        $(function() {
+            //Validate API Auth Details
+            $('.validate-button').on('click', function () {
+                // Validate the form.
+                if (! $('form.validate').valid()) {
+                    return;
+                }
+
+                // Show in progress
+                $('.validate:not(form)').hide();
+                $('.validate.text-progress').show();
+
+                // Post validation data
+                $.post(
+                    '{{ route('plugin.dattormm.settings.validate') }}',
+                    {
+                        datto_url: $(this).find('input.datto_url').val(),
+                        datto_api_key: $(this).find('input.datto_api_key').val(),
+                        datto_api_sec: $(this).find('input.datto_api_sec').val(),
+                    },
+                    function (response) {
+                        if (response.status == 'success') {
+                            $('.validate.text-progress').hide();
+                            $('.validate.text-success').show();
+                        } else {
+                            $('.validate.text-progress').hide();
+                            $('.validate .error-message').text('').text(response.message);
+                            $('.validate.text-fail').show();
+                        }
+                    }, "json")
+                .fail(function () {
+                    $('.validate.text-progress').hide();
+                    $('.validate .error-message').text('');
+                    $('.validate.text-fail').show();
+                });
+            });
+        });
+    </script>
 {% endblock %}

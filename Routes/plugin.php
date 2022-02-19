@@ -11,3 +11,8 @@ $router->post('settings', [
     'as'   => 'plugin.dattormm.settings.update',
     'uses' => 'App\Plugins\DattoRMM\Controllers\DattoRMM@updateSettings'
 ]);
+
+$router->post('validate', [
+    'as'   => 'plugin.dattormm.settings.validate',
+    'uses' => 'App\Plugins\DattoRMM\Controllers\DattoRMM@validateAuth'
+]);
