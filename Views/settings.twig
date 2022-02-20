@@ -150,6 +150,8 @@
                             $('.validate .error-message').text('').text(response.message);
                             $('.validate.text-fail').show();
                         }
+
+                        console.log(response)
                     }, "json")
                 .fail(function () {
                     $('.validate.text-progress').hide();

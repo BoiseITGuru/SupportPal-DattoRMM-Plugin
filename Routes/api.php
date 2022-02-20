@@ -7,4 +7,9 @@
         'uses' => 'EmailController@inboundEmail'
     ]);
 
+    // $api->post('plugin/dattormm/connect', [
+    //     'as'   => 'plugin.dattormm.api.hook.email',
+    //     'uses' => 'RmmController@dattoRmmConnect'
+    // ]);
+
 });
