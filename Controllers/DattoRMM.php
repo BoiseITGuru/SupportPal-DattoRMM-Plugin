@@ -448,14 +448,16 @@ class DattoRMM extends Plugin implements ScheduledTaskInterface
                     foreach($response['sites'] as $site) {
                         $site = SiteInfo::updateOrCreate([
                             'datto_site_id'                 => $site['id'],
-                            'datto_site_uid'                => $site['uid'],
+                            'datto_site_uid'                => $site['uid']
+                        ],
+                        [
                             'datto_site_accountUid'         => $site['accountUid'],
                             'datto_site_name'               => $site['name'],
                             'datto_site_description'        => $site['description'],
                             'datto_site_numDevices'         => $site['devicesStatus']['numberOfDevices'],
                             'datto_site_numOnlineDevices'   => $site['devicesStatus']['numberOfOnlineDevices'],
                             'datto_site_numOfflineDevices'  => $site['devicesStatus']['numberOfOfflineDevices'],
-                            'datto_site_portalUrl'          => $site['portalUrl'],
+                            'datto_site_portalUrl'          => $site['portalUrl']
                         ]);
                     }
                 } else {
